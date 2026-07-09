@@ -1,0 +1,32 @@
+diff -ruN original_gile_code/network_oppor.py reproduced_gile_code/network_oppor.py
+--- original_gile_code/network_oppor.py	2026-07-09 13:23:31.494102500 +0200
++++ reproduced_gile_code/network_oppor.py	2026-07-09 12:39:03.000000000 +0200
+@@ -12,5 +12,5 @@
+     return model
+ 
+ def set_up_optimizers(parameters):
+-    optimizer = torch.optim.Adam(parameters, lr=1e-4)
++    optimizer = torch.optim.Adam(parameters, lr=1e-3)
+     return optimizer
+diff -ruN original_gile_code/network_shar.py reproduced_gile_code/network_shar.py
+--- original_gile_code/network_shar.py	2026-07-09 13:23:31.494102500 +0200
++++ reproduced_gile_code/network_shar.py	2026-07-09 12:39:03.000000000 +0200
+@@ -12,5 +12,5 @@
+     return model
+ 
+ def set_up_optimizers(parameters):
+-    optimizer = torch.optim.Adam(parameters, lr=1e-4)
++    optimizer = torch.optim.Adam(parameters, lr=1e-3)
+     return optimizer
+diff -ruN original_gile_code/network_ucihar.py reproduced_gile_code/network_ucihar.py
+--- original_gile_code/network_ucihar.py	2026-07-09 13:23:31.494102500 +0200
++++ reproduced_gile_code/network_ucihar.py	2026-07-09 12:39:03.000000000 +0200
+@@ -12,7 +12,7 @@
+     return model
+ 
+ def set_up_optimizers(parameters):
+-    optimizer = torch.optim.Adam(parameters, lr=1e-4)
++    optimizer = torch.optim.Adam(parameters, lr=1e-3)
+     return optimizer
+ 
+ 
