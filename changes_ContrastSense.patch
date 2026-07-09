@@ -1,0 +1,299 @@
+diff -ruN original_code_ContrastSense/ContrastSense.py repro/ContrastSense.py
+--- original_code_ContrastSense/ContrastSense.py	2026-07-09 15:58:26.615536300 +0200
++++ repro/ContrastSense.py	2026-06-30 15:43:41.000000000 +0200
+@@ -82,7 +82,7 @@
+         elif modal == 'emg':
+             feature_num = dims * 32
+             # feature_num = 832
+-            self.gru = torch.nn.GRU(16, final_dim, num_layers=1, batch_first=True, bidirectional=True)
++            self.gru = torch.nn.GRU(24, final_dim, num_layers=1, batch_first=True, bidirectional=True)
+         else:
+             NotADirectoryError
+     
+@@ -109,7 +109,7 @@
+         if modal == 'imu':
+             feature_num = 6400
+         elif modal == 'emg':
+-            feature_num = 1024
++            feature_num = 1536
+         else:
+             NotADirectoryError
+ 
+@@ -228,7 +228,7 @@
+         )
+ 
+         self.conv2 = nn.Sequential(
+-            nn.Conv2d(dims, dims*2, kernel_size=(5, 3)),
++            nn.Conv2d(dims, dims*2, kernel_size=(5, 3), padding=(0,1)),
+             nn.BatchNorm2d(dims*2),
+             nn.PReLU(dims*2),
+             nn.Dropout2d(.5),
+@@ -702,7 +702,7 @@
+         logging.info(f"Model of Epoch {best_epoch} checkpoint and metadata has been saved at {self.writer.log_dir}.")
+ 
+     def test_performance(self, best_model_dir, test_loader):
+-        checkpoint = torch.load(best_model_dir, map_location="cpu")
++        checkpoint = torch.load(best_model_dir, map_location="cpu", weights_only=False)
+         state_dict = checkpoint['state_dict']
+         self.model.load_state_dict(state_dict)
+         test_acc, test_f1 = ContrastSense_evaluate(model=self.model, criterion=self.criterion, args=self.args, data_loader=test_loader, test=True)
+@@ -713,7 +713,7 @@
+         print('test acc is {} for {}'.format(test_acc, self.args.name))
+     
+     def test_performance_cross_dataset(self, best_model_dir, test_dataloader_for_all_datasets, datasets):
+-        checkpoint = torch.load(best_model_dir, map_location="cpu")
++        checkpoint = torch.load(best_model_dir, map_location="cpu", weights_only=False)
+         state_dict = checkpoint['state_dict']
+         self.model.load_state_dict(state_dict, strict=False)
+         for i, test_loader in enumerate(test_dataloader_for_all_datasets):
+@@ -846,4 +846,4 @@
+                     )
+                     / 2
+                 )
+-        return loss
+\ No newline at end of file
++        return loss
+Binary files original_code_ContrastSense/attention/__pycache__/attention.cpython-310.pyc and repro/attention/__pycache__/attention.cpython-310.pyc differ
+Binary files original_code_ContrastSense/attention/__pycache__/attention.cpython-39.pyc and repro/attention/__pycache__/attention.cpython-39.pyc differ
+Binary files original_code_ContrastSense/data_loader/__pycache__/contrastive_learning_dataset.cpython-310.pyc and repro/data_loader/__pycache__/contrastive_learning_dataset.cpython-310.pyc differ
+Binary files original_code_ContrastSense/data_loader/__pycache__/contrastive_learning_dataset.cpython-39.pyc and repro/data_loader/__pycache__/contrastive_learning_dataset.cpython-39.pyc differ
+Binary files original_code_ContrastSense/data_loader/__pycache__/emg_transforms.cpython-310.pyc and repro/data_loader/__pycache__/emg_transforms.cpython-310.pyc differ
+Binary files original_code_ContrastSense/data_loader/__pycache__/emg_transforms.cpython-39.pyc and repro/data_loader/__pycache__/emg_transforms.cpython-39.pyc differ
+Binary files original_code_ContrastSense/data_loader/__pycache__/imu_transforms.cpython-310.pyc and repro/data_loader/__pycache__/imu_transforms.cpython-310.pyc differ
+Binary files original_code_ContrastSense/data_loader/__pycache__/imu_transforms.cpython-39.pyc and repro/data_loader/__pycache__/imu_transforms.cpython-39.pyc differ
+Binary files original_code_ContrastSense/data_loader/__pycache__/view_generator.cpython-310.pyc and repro/data_loader/__pycache__/view_generator.cpython-310.pyc differ
+Binary files original_code_ContrastSense/data_loader/__pycache__/view_generator.cpython-39.pyc and repro/data_loader/__pycache__/view_generator.cpython-39.pyc differ
+Binary files original_code_ContrastSense/data_preprocessing/__pycache__/HHAR.cpython-310.pyc and repro/data_preprocessing/__pycache__/HHAR.cpython-310.pyc differ
+Binary files original_code_ContrastSense/data_preprocessing/__pycache__/HHAR.cpython-39.pyc and repro/data_preprocessing/__pycache__/HHAR.cpython-39.pyc differ
+Binary files original_code_ContrastSense/data_preprocessing/__pycache__/MotionSense.cpython-310.pyc and repro/data_preprocessing/__pycache__/MotionSense.cpython-310.pyc differ
+Binary files original_code_ContrastSense/data_preprocessing/__pycache__/data_split.cpython-310.pyc and repro/data_preprocessing/__pycache__/data_split.cpython-310.pyc differ
+Binary files original_code_ContrastSense/data_preprocessing/__pycache__/data_split.cpython-39.pyc and repro/data_preprocessing/__pycache__/data_split.cpython-39.pyc differ
+diff -ruN original_code_ContrastSense/data_preprocessing/data_split.py repro/data_preprocessing/data_split.py
+--- original_code_ContrastSense/data_preprocessing/data_split.py	2026-07-09 15:58:26.619543600 +0200
++++ repro/data_preprocessing/data_split.py	2026-05-04 22:28:29.000000000 +0200
+@@ -92,7 +92,12 @@
+ Cross_DatasetsNum = {
+     'Merged_dataset': 4,
+ }
+-
++UsersNum['NinaPro_DB4'] = 10
++UsersNum['NinaPro_DB5'] = 10
++ClassesNum['NinaPro_DB4'] = 7
++ClassesNum['NinaPro_DB5'] = 7
++LabelPosition['NinaPro_DB4'] = 0   # adjust if your preprocessed add_infor stores label at a different index
++LabelPosition['NinaPro_DB5'] = 0
+ 
+ HHAR_movement = ['stand', 'sit', 'walk', 'stairsup', 'stairsdown', 'bike']
+ ACT_Translated_labels = ['Downstairs', 'Upstairs', 'Walking', 'Running', 'Standing', 'Sitting']
+@@ -778,11 +783,47 @@
+     return
+     
+ 
++# if __name__ == '__main__':
++#     dataset='Shoaib'
++#     preprocessing_dataset_cross_domain_val(dir=f'datasets/{dataset}/', target_dir=f"datasets/{dataset}_shot0/", test_portion=0.6, val_portion=0.15, tune_domain_portion=0.4, dataset=dataset, cross='users')
++    
++#     new_segmentation_for_user(seg_types=5)
++#     new_segmentation_for_positions(seg_types=5)
++#     new_segmentation_for_devices(seg_types=5)
++
+ if __name__ == '__main__':
+-    dataset='Shoaib'
+-    preprocessing_dataset_cross_domain_val(dir=f'datasets/{dataset}/', target_dir=f"datasets/{dataset}_shot0/", test_portion=0.6, val_portion=0.15, tune_domain_portion=0.4, dataset=dataset, cross='users')
+-    
+-    new_segmentation_for_user(seg_types=5)
+-    new_segmentation_for_positions(seg_types=5)
+-    new_segmentation_for_devices(seg_types=5)
+-    
+\ No newline at end of file
++    from concurrent.futures import ProcessPoolExecutor
++    import random, numpy as np, os
++
++    def process_split(args):
++        dataset, split_idx = args
++        seed = split_idx
++        random.seed(seed)
++        np.random.seed(seed)
++        os.environ['PYTHONHASHSEED'] = str(seed)
++
++        target_dir = f"datasets/{dataset}_split_{split_idx}"
++        print(f"Processing {dataset} split {split_idx} -> {target_dir}")
++
++        preprocessing_dataset_cross_domain_val(
++            dir=f'datasets/{dataset}/',
++            target_dir=target_dir,
++            dataset=dataset,
++            cross='users',
++            test_portion=0.6,
++            val_portion=0.15,
++            tune_domain_portion=0.4
++        )
++
++    datasets = [
++        "HHAR", "MotionSense", "Shoaib", "HASC",
++        "Myo", "NinaPro_DB4", "NinaPro_DB5"
++    ]
++
++    tasks = []
++    for ds in datasets:
++        for split_idx in range(5):
++            tasks.append((ds, split_idx))
++
++    with ProcessPoolExecutor(max_workers=os.cpu_count()) as executor:
++        executor.map(process_split, tasks)
+\ No newline at end of file
+Binary files original_code_ContrastSense/exceptions/__pycache__/exceptions.cpython-310.pyc and repro/exceptions/__pycache__/exceptions.cpython-310.pyc differ
+Binary files original_code_ContrastSense/exceptions/__pycache__/exceptions.cpython-39.pyc and repro/exceptions/__pycache__/exceptions.cpython-39.pyc differ
+diff -ruN original_code_ContrastSense/getPenalty.py repro/getPenalty.py
+--- original_code_ContrastSense/getPenalty.py	2026-07-09 15:58:26.619543600 +0200
++++ repro/getPenalty.py	2026-05-09 11:02:40.000000000 +0200
+@@ -4,7 +4,7 @@
+ import torch.multiprocessing
+ import torch.nn.functional as F
+ 
+-torch.multiprocessing.set_sharing_strategy('file_system')
++#torch.multiprocessing.set_sharing_strategy('file_system')
+ 
+ 
+ def getPenalty(args, train_loader, save_dir):
+diff -ruN original_code_ContrastSense/main.py repro/main.py
+--- original_code_ContrastSense/main.py	2026-07-09 15:58:26.623872900 +0200
++++ repro/main.py	2026-05-08 16:40:26.000000000 +0200
+@@ -3,7 +3,7 @@
+ import torch
+ import torch.multiprocessing
+ 
+-torch.multiprocessing.set_sharing_strategy('file_system')
++#torch.multiprocessing.set_sharing_strategy('file_system')
+ 
+ from ContrastSense import ContrastSense, ContrastSense_v1
+ from data_loader.contrastive_learning_dataset import ContrastiveLearningDataset
+@@ -131,4 +131,4 @@
+     return
+ 
+ if __name__ == '__main__':
+-    main()
+\ No newline at end of file
++    main()
+diff -ruN original_code_ContrastSense/main_transfer_cross_dataset.py repro/main_transfer_cross_dataset.py
+--- original_code_ContrastSense/main_transfer_cross_dataset.py	2026-07-09 15:58:26.623872900 +0200
++++ repro/main_transfer_cross_dataset.py	2026-05-09 11:02:56.000000000 +0200
+@@ -12,7 +12,7 @@
+ from getPenalty import load_fisher_matrix
+ from utils import fetch_test_loader_for_all_dataset, seed_torch
+ import torch.multiprocessing
+-torch.multiprocessing.set_sharing_strategy('file_system')
++#torch.multiprocessing.set_sharing_strategy('file_system')
+ 
+ model_names = sorted(name for name in models.__dict__
+                      if name.islower() and not name.startswith("__")
+diff -ruN original_code_ContrastSense/main_transfer_penalty.py repro/main_transfer_penalty.py
+--- original_code_ContrastSense/main_transfer_penalty.py	2026-07-09 15:58:26.623872900 +0200
++++ repro/main_transfer_penalty.py	2026-05-08 16:40:38.000000000 +0200
+@@ -14,7 +14,7 @@
+ from data_loader import imu_transforms, emg_transforms
+ 
+ import torch.multiprocessing
+-torch.multiprocessing.set_sharing_strategy('file_system')
++#torch.multiprocessing.set_sharing_strategy('file_system')
+ 
+ model_names = sorted(name for name in models.__dict__
+                      if name.islower() and not name.startswith("__")
+diff -ruN original_code_ContrastSense/requirements.txt repro/requirements.txt
+--- original_code_ContrastSense/requirements.txt	2026-07-09 15:58:26.623872900 +0200
++++ repro/requirements.txt	2026-05-03 20:06:20.000000000 +0200
+@@ -1,11 +1,8 @@
+ matplotlib==3.5.1
+-numpy==1.21.4
+-pandas==1.1.5
+-PyYAML==6.0
++numpy==1.24.4
++pandas==1.5.3
+ PyYAML==6.0.2
+-scikit_learn==1.0.2
+-scipy==1.7.3
++scikit_learn==1.1.3
++scipy==1.10.1
+ thop==0.1.1.post2209072238
+-torch==1.10.0
+-torchvision==0.11.1
+-tqdm==4.62.3
++tqdm==4.62.3
+\ No newline at end of file
+diff -ruN original_code_ContrastSense/reuslts.txt repro/reuslts.txt
+--- original_code_ContrastSense/reuslts.txt	1970-01-01 01:00:00.000000000 +0100
++++ repro/reuslts.txt	2026-06-04 15:33:45.000000000 +0200
+@@ -0,0 +1,72 @@
++=====================================================================================
++ CONTRASTSENSE REPRODUCTION STUDY METRICS AGGREGATOR
++=====================================================================================
++
++=====================================================================================
++ DATASET: HHAR
++=====================================================================================
++
++--- MAIN RESULTS (FULL MODEL) ---
++Metric     | Reproduction (Mean ± Std) | Paper Claim     | Gap (Repro - Claim)
++-------------------------------------------------------------------------------------
++F1 Score   |  60.88 ± 3.41             |         66.43 |      -5.55
++Accuracy   |  63.87 ± 3.53             |         68.35 |      -4.48
++(Averaged over 5/5 completed splits)
++
++--- ABLATION STUDY ---
++Ablation Variant   | F1 (Repro)   | F1 (Paper)   | Acc (Repro)  | Acc (Paper)
++---------------------------------------------------------------------------
++No_PwP             |      62.01 |      66.33 |      63.56 |      68.27
++No_TimeWin         |      65.62 |      60.48 |      66.98 |      64.24
++No_SimSel          |      62.30 |      55.65 |      63.88 |      58.76
++
++=====================================================================================
++ DATASET: MotionSense
++=====================================================================================
++
++--- MAIN RESULTS (FULL MODEL) ---
++Metric     | Reproduction (Mean ± Std) | Paper Claim     | Gap (Repro - Claim)
++-------------------------------------------------------------------------------------
++F1 Score   |  69.54 ± 7.72             |         71.82 |      -2.28
++Accuracy   |  71.08 ± 6.28             |         73.26 |      -2.18
++(Averaged over 5/5 completed splits)
++
++=====================================================================================
++ DATASET: Shoaib
++=====================================================================================
++
++--- MAIN RESULTS (FULL MODEL) ---
++Metric     | Reproduction (Mean ± Std) | Paper Claim     | Gap (Repro - Claim)
++-------------------------------------------------------------------------------------
++F1 Score   |  79.15 ± 2.88             |         78.23 |       0.92
++Accuracy   |  79.55 ± 2.65             |         78.46 |       1.09
++(Averaged over 5/5 completed splits)
++
++=====================================================================================
++ DATASET: HASC
++=====================================================================================
++
++--- MAIN RESULTS (FULL MODEL) ---
++Metric     | Reproduction (Mean ± Std) | Paper Claim     | Gap (Repro - Claim)
++-------------------------------------------------------------------------------------
++F1 Score   |  36.40 ± 4.25             |         34.92 |       1.48
++Accuracy   |  51.27 ± 8.32             |         44.70 |       6.57
++(Averaged over 5/5 completed splits)
++
++=====================================================================================
++ DATASET: Myo
++=====================================================================================
++
++--- MAIN RESULTS (FULL MODEL) ---
++Metric     | Reproduction (Mean ± Std) | Paper Claim     | Gap (Repro - Claim)
++-------------------------------------------------------------------------------------
++F1 Score   |  61.16 ± 2.48             |         61.19 |      -0.03
++Accuracy   |  61.51 ± 2.36             |         62.01 |      -0.50
++(Averaged over 5/5 completed splits)
++
++--- ABLATION STUDY ---
++Ablation Variant   | F1 (Repro)   | F1 (Paper)   | Acc (Repro)  | Acc (Paper)
++---------------------------------------------------------------------------
++No_PwP             |      61.43 |      60.68 |      61.70 |      61.40
++No_TimeWin         |      60.81 |          - |      61.24 |          -
++No_SimSel          |      61.25 |          - |      61.54 |          -
+\ No newline at end of file
