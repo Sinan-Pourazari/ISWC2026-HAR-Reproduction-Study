@@ -1,0 +1,3 @@
+[submodule "original_code_STMAE"]
+	path = original_code_STMAE
+	url = https://github.com/wdkhuans/STMAE.git
