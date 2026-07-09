@@ -1,0 +1,3 @@
+[submodule "original_code_TinierHAR"]
+	path = original_code_TinierHAR
+	url = https://github.com/zhaxidele/TinierHAR.git
