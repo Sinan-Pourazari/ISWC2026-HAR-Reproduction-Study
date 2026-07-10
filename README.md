@@ -23,7 +23,7 @@ To explore a specific framework, clone this repository and checkout the desired 
 ```bash
 # 1. Clone the repository
 git clone [https://github.com/Sinan-Pourazari/ISWC2026-HAR-Reproduction-Study.git](https://github.com/Sinan-Pourazari/ISWC2026-HAR-Reproduction-Study.git)
-cd iswc-har-reproduction
+cd ISWC2026-HAR-Reproduction-Study
 
 # 2. Checkout the specific paper's branch
 git checkout tinierhar
